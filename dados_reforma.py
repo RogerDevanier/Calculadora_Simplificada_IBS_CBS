@@ -1,30 +1,28 @@
-# Base de dados estruturada conforme LC 214/2025 e tabelas da Receita Federal
+import os
+import sys
+import json
+import gzip
 
-NCM_LISTA = [
-    {"codigo": "10063021", "descricao": "Arroz semibranqueado ou branqueado (polido)", "anexo": "Anexo I - Cesta Básica Nacional", "cclass_sugerida": "200003"},
-    {"codigo": "07133319", "descricao": "Feijão comum preto", "anexo": "Anexo I - Cesta Básica Nacional", "cclass_sugerida": "200003"},
-    {"codigo": "04012010", "descricao": "Leite UHT (longa vida)", "anexo": "Anexo I - Cesta Básica Nacional", "cclass_sugerida": "200003"},
-    {"codigo": "02013000", "descricao": "Carnes desossadas de bovino, frescas ou refrigeradas", "anexo": "Anexo I - Cesta Básica Nacional", "cclass_sugerida": "200003"},
-    {"codigo": "19059090", "descricao": "Pão francês comum", "anexo": "Anexo I - Cesta Básica Nacional", "cclass_sugerida": "200003"},
-    {"codigo": "30049099", "descricao": "Medicamentos de uso humano (lista regulada)", "anexo": "Anexo IV - Medicamentos", "cclass_sugerida": "200009"},
-    {"codigo": "84713012", "descricao": "Notebook / Computador portátil", "anexo": "Regra Geral", "cclass_sugerida": "000001"},
-    {"codigo": "85171300", "descricao": "Smartphones / Telefones celulares", "anexo": "Regra Geral", "cclass_sugerida": "000001"},
-    {"codigo": "22030000", "descricao": "Cervejas de malte (Sujeito a Imposto Seletivo)", "anexo": "Art. 409 - Imposto Seletivo", "cclass_sugerida": "000002"},
-    {"codigo": "87032210", "descricao": "Automóvel de passageiros", "anexo": "Art. 409 - Imposto Seletivo", "cclass_sugerida": "000002"},
-    {"codigo": "49019900", "descricao": "Livros, jornais e periódicos", "anexo": "Imunidade Constitucional (Art. 150, VI, d)", "cclass_sugerida": "410001"},
-]
 
-NBS_LISTA = [
-    {"codigo": "122011200", "descricao": "Serviços de educação infantil (pré-escola)", "anexo": "Anexo II - Educação", "cclass_sugerida": "200028"},
-    {"codigo": "122031000", "descricao": "Serviços de ensino superior (graduação)", "anexo": "Anexo II - Educação", "cclass_sugerida": "200028"},
-    {"codigo": "123011100", "descricao": "Serviços médicos e hospitalares", "anexo": "Anexo III - Saúde", "cclass_sugerida": "200029"},
-    {"codigo": "123012100", "descricao": "Serviços odontológicos", "anexo": "Anexo III - Saúde", "cclass_sugerida": "200029"},
-    {"codigo": "115011000", "descricao": "Desenvolvimento de software sob encomenda", "anexo": "Regra Geral", "cclass_sugerida": "000001"},
-    {"codigo": "114011100", "descricao": "Consultoria em gestão empresarial", "anexo": "Regra Geral", "cclass_sugerida": "000001"},
-    {"codigo": "114031100", "descricao": "Serviços advocatícios (Profissão Regulamentada)", "anexo": "Art. 127 - Profissões Intelectuais", "cclass_sugerida": "200035"},
-    {"codigo": "114021100", "descricao": "Serviços de contabilidade e auditoria", "anexo": "Art. 127 - Profissões Intelectuais", "cclass_sugerida": "200035"},
-    {"codigo": "104011100", "descricao": "Transporte público coletivo urbano de passageiros", "anexo": "Anexo IX - Transporte Coletivo", "cclass_sugerida": "200015"},
-]
+def _caminho_recurso(nome_arquivo: str) -> str:
+    """Resolve o caminho tanto em desenvolvimento quanto dentro do .exe do PyInstaller."""
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, nome_arquivo)
+
+
+def _carregar_base_oficial():
+    caminho = _caminho_recurso("base_oficial_reforma.json.gz")
+    if os.path.exists(caminho):
+        with gzip.open(caminho, "rt", encoding="utf-8") as f:
+            return json.load(f)
+    return {"ncm": [], "nbs": [], "municipios": []}
+
+
+_BASE = _carregar_base_oficial()
+
+NCM_LISTA = _BASE.get("ncm", [])
+NBS_LISTA = _BASE.get("nbs", [])
+MUNICIPIOS_LISTA = _BASE.get("municipios", [])
 
 CST_LISTA = [
     "Todos os CST",
@@ -49,24 +47,6 @@ CLASSIFICACOES_TRIBUTARIAS = [
     {"codigo": "510001", "cst": "510", "nome": "Diferimento na cadeia produtiva (Insumos Agropecuários)", "reducao_cbs": 100.0, "reducao_ibs": 100.0, "base_legal": "LC 214/2025, Art. 138", "padrao": False},
 ]
 
-MUNICIPIOS_LISTA = [
-    {"uf": "BA", "municipio": "Salvador", "ibge": "2927408"},
-    {"uf": "BA", "municipio": "Feira de Santana", "ibge": "2910800"},
-    {"uf": "BA", "municipio": "Camaçari", "ibge": "2905701"},
-    {"uf": "SP", "municipio": "São Paulo", "ibge": "3550308"},
-    {"uf": "SP", "municipio": "Campinas", "ibge": "3509502"},
-    {"uf": "RJ", "municipio": "Rio de Janeiro", "ibge": "3304557"},
-    {"uf": "MG", "municipio": "Belo Horizonte", "ibge": "3106200"},
-    {"uf": "PR", "municipio": "Curitiba", "ibge": "4106902"},
-    {"uf": "RS", "municipio": "Porto Alegre", "ibge": "4314902"},
-    {"uf": "DF", "municipio": "Brasília", "ibge": "5300108"},
-    {"uf": "PE", "municipio": "Recife", "ibge": "2611606"},
-    {"uf": "CE", "municipio": "Fortaleza", "ibge": "2304400"},
-    {"uf": "AM", "municipio": "Manaus (Zona Franca)", "ibge": "1302603"},
-]
-
-# Cronograma oficial de transição (EC 132/2023 e LC 214/2025 Arts. 343-348)
-# Estimativa TCU para CBS cheia: 11,30% | Estimativa IBS cheio: 17,70% (10,62% Est + 7,08% Mun)
 CRONOGRAMA_TRANSICAO = {
     2026: {"cbs": 0.90, "ibs_est": 0.05, "ibs_mun": 0.05, "icms_iss_fator": 1.0, "nota": "2026 (Teste): CBS 0,9% e IBS 0,1% compensáveis com PIS/Cofins."},
     2027: {"cbs": 11.30, "ibs_est": 0.05, "ibs_mun": 0.05, "icms_iss_fator": 1.0, "nota": "2027: Extinção PIS/Cofins, entrada da CBS cheia (est. TCU 11,3%) e IBS simbólico 0,1%."},

@@ -88,13 +88,22 @@ class ModalBusca(ctk.CTkToplevel):
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
-        if not lista:
+        total = len(lista)
+        if total == 0:
             ctk.CTkLabel(
                 self.scroll_frame, text="Nenhum resultado encontrado.", text_color=COR_SUBTEXTO, font=("Segoe UI", 12)
             ).pack(pady=20)
             return
 
-        for item in lista:
+        limite = 60
+        ctk.CTkLabel(
+            self.scroll_frame,
+            text=f"Exibindo {min(total, limite)} de {total} registros cadastrados (digite para refinar):",
+            text_color=COR_PRIMARIA,
+            font=("Segoe UI", 11, "bold"),
+        ).pack(anchor="w", padx=6, pady=(2, 6))
+
+        for item in lista[:limite]:
             texto = self.formatador_item(item)
             btn = ctk.CTkButton(
                 self.scroll_frame,
